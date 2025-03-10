@@ -12,22 +12,21 @@
 
 #include <utility>
 
-DJAudioPlayer::DJAudioPlayer(std::string name) : deckName(std::move(name)), macUpdateUIThread(&cancelToken, [this]()
-{
-  // if (isPlaying())
-  //   juce_updateNowPlayingInfo();
-}) {}
+DJAudioPlayer::DJAudioPlayer(std::string name, AudioFormatManager &_formatManager) : deckName(std::move(name)), formatManager(_formatManager) {}
 DJAudioPlayer::~DJAudioPlayer()
 {
-  cancelToken.store (false, std::memory_order_relaxed);
-};
+}
 
 //==============================================================================
 void DJAudioPlayer::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 {
-  formatManager.registerBasicFormats();
   transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
   resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+  // for (int i = 0; i < formatManager.getNumKnownFormats(); i++)
+  // {
+  //   const auto format = formatManager.getKnownFormat(i);
+  //   DBG("Supported format: " << format->getFormatName());
+  // }
   // juce_updateNowPlayingInfo();
 }
 
@@ -44,14 +43,19 @@ void DJAudioPlayer::releaseResources()
 
 void DJAudioPlayer::loadURL(const URL& audioURL)
 {
-  auto *reader = formatManager.createReaderFor(audioURL.createInputStream(false));
-  if (reader != nullptr) // good file
+  // for (int i = 0; i < formatManager.getNumKnownFormats(); i++)
+  // {
+  //   const auto format = formatManager.getKnownFormat(i);
+  //   DBG("Supported format: " << format->getFormatName());
+  // }
+  URL::InputStreamOptions options{URL::ParameterHandling{URL::ParameterHandling::inAddress}};
+  if (auto *reader = formatManager.createReaderFor(audioURL.createInputStream(options.withConnectionTimeoutMs(5000).withNumRedirectsToFollow(3))); reader != nullptr) // good file
   {
     // DBG ("Track Title: " << trackTitle);
-    if (const String trackTitle = reader->metadataValues["Title"]; !trackTitle.isEmpty())
-      this->trackTitle = trackTitle.toUTF8();
-    else
-      this->trackTitle = audioURL.getFileName().toUTF8();
+    // if (const String trackTitle = reader->metadataValues["Title"]; !trackTitle.isEmpty())
+    //   this->trackTitle = trackTitle.toUTF8();
+    // else
+    //   this->trackTitle = audioURL.getFileName().toUTF8();
     // loadTags(audioURL.getSubPath().toStdString().c_str());
 
     // load image data
@@ -60,26 +64,40 @@ void DJAudioPlayer::loadURL(const URL& audioURL)
     std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
     transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
     readerSource = std::move(newSource);
-    juce_setAudioEngineInstance(this);
-    juce_setupRemoteCommandCenter();
-    juce_updateNowPlayingInfo();
+    // juce_setAudioEngineInstance(this);
+    // juce_setupRemoteCommandCenter();
+    // juce_updateNowPlayingInfo();
+  } else {
+    DBG("Audio URL: " << audioURL.toString(false));
+    if (! audioURL.isLocalFile())
+    {
+      DBG("Error: Not a local file");
+    }
+    else if (! audioURL.getLocalFile().existsAsFile())
+    {
+      DBG("Error: File does not exist");
+    }
+    else if (! audioURL.getLocalFile().hasReadAccess())
+    {
+      DBG("Error: No read access");
+    }
+
+    if (auto inputStream = audioURL.createInputStream(options); inputStream == nullptr)
+    {
+      DBG("Failed to create input stream!");
+    }
+    else
+    {
+      auto *_reader = formatManager.createReaderFor(std::move(inputStream));
+      if (_reader == nullptr)
+      {
+        DBG("Failed to create reader!");
+      }
+    }
+
+    DBG("DJAudioPlayer::loadURL bad file");
   }
 }
-
-// void DJAudioPlayer::loadTags(const char* filepath)
-// {
-//   std::cout << "fn: " << filepath << std::endl;
-//   const auto file = TagLib::FileRef{filepath};
-//   std::cout << file.isNull() << std::endl;
-//   std::cout << file.tag() << std::endl;
-//   if (!file.isNull() && file.tag())
-//   {
-//     const TagLib::Tag *tag = file.tag();
-//
-//     std::cout << tag->title() << std::endl;
-//     std::cout << tag->artist() << std::endl;
-//   }
-// }
 
 void DJAudioPlayer::setGain(double gain)
 {
@@ -100,7 +118,7 @@ void DJAudioPlayer::setSpeed(const double ratio)
 void DJAudioPlayer::setPosition(const double position)
 {
   transportSource.setPosition(position);
-  juce_updateNowPlayingInfo();
+  // juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::setPositionRelative(const double position)
@@ -146,12 +164,12 @@ double DJAudioPlayer::getTrackDuration() const
   return transportSource.getLengthInSeconds();
 }
 
-const char* DJAudioPlayer::getTrackTitle() const
-{
-  // std::cout << "t: " << trackTitle << std::endl;
-  // std::cout << "t: " << trackTitle.c_str() << std::endl;
-  return trackTitle.c_str();
-}
+// const char* DJAudioPlayer::getTrackTitle() const
+// {
+//   // std::cout << "t: " << trackTitle << std::endl;
+//   // std::cout << "t: " << trackTitle.c_str() << std::endl;
+//   return trackTitle.c_str();
+// }
 
 const char* DJAudioPlayer::getActiveDeckName() const
 {
@@ -163,7 +181,7 @@ const char* DJAudioPlayer::getActiveDeckName() const
 const char* DJAudioPlayer::getFilePath() const
 {
   static char buf[100];  // Static buffer persists after function returns
-  snprintf(buf, sizeof(buf), "%s", filePath.c_str());
+  // snprintf(buf, sizeof(buf), "%s", filePath.c_str());
   return buf;
 }
 
@@ -172,15 +190,15 @@ void DJAudioPlayer::start()
 {
   if (!transportSource.isPlaying())
     transportSource.start();
-  juce_setAudioEngineInstance(this);
-  juce_updateNowPlayingInfo();
+  // juce_setAudioEngineInstance(this);
+  // juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::stop()
 {
   if (transportSource.isPlaying())
     transportSource.stop();
-  juce_updateNowPlayingInfo();
+  // juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::togglePlayPause()
@@ -189,10 +207,14 @@ void DJAudioPlayer::togglePlayPause()
     transportSource.stop();
   else
     transportSource.start();
-  juce_updateNowPlayingInfo();
+  // juce_updateNowPlayingInfo();
 }
 
 bool DJAudioPlayer::isPlaying() const
 {
   return transportSource.isPlaying();
+}
+
+bool DJAudioPlayer::isTrackFinished() const {
+  return transportSource.hasStreamFinished();
 }

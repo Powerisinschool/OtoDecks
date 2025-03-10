@@ -11,10 +11,12 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include <taglib/fileref.h>
 
 #include "IntervalThread.h"
 #include "DJAudioPlayer.h"
+#include "PlaylistComponent.h"
+#include "TrackListComponent.h"
+#include "WaveformDisplay.h"
 
 //==============================================================================
 /*
@@ -22,10 +24,13 @@
 class DeckGUI  : public juce::Component,
                     public Button::Listener,
                     public Slider::Listener,
-                    public FileDragAndDropTarget
+                    public FileDragAndDropTarget,
+                    public Timer
 {
 public:
-    DeckGUI(DJAudioPlayer *_player);
+    DeckGUI(DJAudioPlayer* player,
+           AudioFormatManager & 	formatManagerToUse,
+           AudioThumbnailCache & 	cacheToUse );
     ~DeckGUI() override;
 
     void paint (juce::Graphics&) override;
@@ -41,24 +46,33 @@ public:
     void filesDropped(const StringArray& files, int x, int y) override;
 
     void updateTrackPosition();
+    void timerCallback() override;
 
 private:
     FileChooser fChooser{"Select a file..."};
+
     TextButton playButton{"PLAY"};
     TextButton stopButton{"STOP"};
     TextButton loadButton{"LOAD"};
+    TextButton playSelectedButton{"PLAY SELECTED TRACK"};
+    TextButton muteButton{"MUTE"};
+    TextButton skipButton{"SKIP"};
 
     Slider volSlider;
     Slider speedSlider;
     Slider posSlider;
 
     DJAudioPlayer *player;
-    std::atomic_bool cancelToken{false};
-    IntervalThread progressThread{&cancelToken, [this]()
-    {
-        if (player->isPlaying())
-            updateTrackPosition();
-    }};
+    WaveformDisplay waveformDisplay;
+    PlaylistComponent *playlist;
+    // std::atomic_bool cancelToken{false};
+    // IntervalThread progressThread{&cancelToken, [this]()
+    // {
+    //     if (player->isPlaying())
+    //         updateTrackPosition();
+    // }};
+
+    TrackListComponent trackListComponent{ player, &waveformDisplay };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DeckGUI)
 };

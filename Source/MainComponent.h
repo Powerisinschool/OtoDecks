@@ -5,6 +5,7 @@
 
 #include "DeckGUI.h"
 #include "DJAudioPlayer.h"
+#include "PlaylistComponent.h"
 
 //==============================================================================
 /*
@@ -27,25 +28,21 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
 
-    // void play();
-    // void pause();
-    // void togglePlayPause();
-    // void seekTo(double timeInSeconds);
-
-    // double getTrackDuration();
-    // double getPlaybackTime();
-    // bool isPlaying();
-
 private:
     //==============================================================================
     // Your private member variables go here...
     MixerAudioSource mixerSource;
 
-    DJAudioPlayer player1{"Player 1"};
-    DeckGUI deckGUI1{&player1};
+    AudioFormatManager formatManager;
+    AudioThumbnailCache thumbCache{100};
 
-    DJAudioPlayer player2{"Player 2"};
-    DeckGUI deckGUI2{&player2};
+    DJAudioPlayer player1{"Player 1", formatManager};
+    DeckGUI deck1{&player1, formatManager, thumbCache};
+
+    DJAudioPlayer player2{"Player 2", formatManager};
+    DeckGUI deck2{&player2, formatManager, thumbCache};
+
+    PlaylistComponent playlistComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -10,9 +10,6 @@
 
 #pragma once
 
-#include <taglib/fileref.h>
-#include <taglib/tag.h>
-#include <taglib/mpegfile.h>
 #include <JuceHeader.h>
 
 #include "IntervalThread.h"
@@ -22,7 +19,7 @@ using namespace juce;
 class DJAudioPlayer : public AudioSource {
 public:
 
-  explicit DJAudioPlayer(std::string  name);
+  explicit DJAudioPlayer(std::string name, AudioFormatManager &_formatManager);
   ~DJAudioPlayer() override;
 
   //==============================================================================
@@ -46,7 +43,7 @@ public:
   double getPositionRelative() const;
   // Return the total length of the track
   double getTrackDuration() const;
-  const char* getTrackTitle() const;
+  // const char* getTrackTitle() const;
   const char *getActiveDeckName() const;
   const char *getFilePath() const;
 
@@ -56,19 +53,21 @@ public:
 
   bool isPlaying() const;
 
+  bool isTrackFinished() const;
+
 private:
   std::string deckName;
-  AudioFormatManager formatManager;
+  AudioFormatManager& formatManager;
   std::unique_ptr<AudioFormatReaderSource> readerSource;
   AudioTransportSource transportSource;
   ResamplingAudioSource resampleSource{&transportSource, false, 2};
 
-  std::atomic_bool cancelToken{false};
-  IntervalThread macUpdateUIThread;
+  // std::atomic_bool cancelToken{false};
+  // IntervalThread macUpdateUIThread;
 
-  std::string filePath;
+  // std::string filePath;
 
-  std::string trackTitle{"Loading..."};
+  // std::string trackTitle{"Loading..."};
 };
 
 extern "C"

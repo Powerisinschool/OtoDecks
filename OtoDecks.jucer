@@ -8,6 +8,10 @@
             file="Source/IntervalThread.cpp"/>
       <FILE id="uShlTx" name="IntervalThread.h" compile="0" resource="0"
             file="Source/IntervalThread.h"/>
+      <FILE id="efCl4R" name="PlaylistComponent.cpp" compile="1" resource="0"
+            file="Source/PlaylistComponent.cpp"/>
+      <FILE id="WSoRYW" name="PlaylistComponent.h" compile="0" resource="0"
+            file="Source/PlaylistComponent.h"/>
       <FILE id="rzDaxR" name="DeckGUI.cpp" compile="1" resource="0" file="Source/DeckGUI.cpp"/>
       <FILE id="rVmhuI" name="DeckGUI.h" compile="0" resource="0" file="Source/DeckGUI.h"/>
       <FILE id="ZHecZB" name="DJAudioPlayer.cpp" compile="1" resource="0"
@@ -17,6 +21,10 @@
       <FILE id="V3eWas" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="Y8VMYC" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
+      <FILE id="KZZ3LJ" name="TrackListComponent.cpp" compile="1" resource="0"
+            file="Source/TrackListComponent.cpp"/>
+      <FILE id="Xa42cs" name="TrackListComponent.h" compile="0" resource="0"
+            file="Source/TrackListComponent.h"/>
       <FILE id="WUUzq7" name="MacMediaControls.mm" compile="1" resource="0"
             file="Source/MacMediaControls.mm"/>
     </GROUP>
@@ -56,5 +64,24 @@
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
+    <LINUX_MAKE targetFolder="Builds/LinuxMakefile">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug"/>
+        <CONFIGURATION isDebug="0" name="Release"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../juce"/>
+        <MODULEPATH id="juce_audio_devices" path="../../juce"/>
+        <MODULEPATH id="juce_audio_formats" path="../../juce"/>
+        <MODULEPATH id="juce_audio_processors" path="../../juce"/>
+        <MODULEPATH id="juce_audio_utils" path="../../juce"/>
+        <MODULEPATH id="juce_core" path="../../juce"/>
+        <MODULEPATH id="juce_data_structures" path="../../juce"/>
+        <MODULEPATH id="juce_events" path="../../juce"/>
+        <MODULEPATH id="juce_graphics" path="../../juce"/>
+        <MODULEPATH id="juce_gui_basics" path="../../juce"/>
+        <MODULEPATH id="juce_gui_extra" path="../../juce"/>
+      </MODULEPATHS>
+    </LINUX_MAKE>
   </EXPORTFORMATS>
 </JUCERPROJECT>

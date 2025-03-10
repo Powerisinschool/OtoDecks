@@ -12,15 +12,25 @@
 #include "DeckGUI.h"
 
 //==============================================================================
-DeckGUI::DeckGUI(DJAudioPlayer *_player) : player(_player)
+DeckGUI::DeckGUI(DJAudioPlayer* _player,
+                AudioFormatManager & 	formatManagerToUse,
+                AudioThumbnailCache & 	cacheToUse
+           ) : player(_player),
+               waveformDisplay(formatManagerToUse, cacheToUse)
 {
     addAndMakeVisible(playButton);
     addAndMakeVisible(stopButton);
+    addAndMakeVisible(playSelectedButton);
+    addAndMakeVisible(muteButton);
+    addAndMakeVisible(skipButton);
     addAndMakeVisible(loadButton);
 
     addAndMakeVisible(volSlider);
     addAndMakeVisible(speedSlider);
     addAndMakeVisible(posSlider);
+
+    addAndMakeVisible(trackListComponent);
+    addAndMakeVisible(waveformDisplay);
 
     volSlider.setRange(0.0, 2.0); // Enables extra volume to 200% (like VLC)
     speedSlider.setRange(0.0, 100.0);
@@ -32,6 +42,9 @@ DeckGUI::DeckGUI(DJAudioPlayer *_player) : player(_player)
 
     playButton.addListener(this);
     stopButton.addListener(this);
+    playSelectedButton.addListener(this);
+    muteButton.addListener(this);
+    skipButton.addListener(this);
     loadButton.addListener(this);
 
     volSlider.addListener(this);
@@ -41,7 +54,7 @@ DeckGUI::DeckGUI(DJAudioPlayer *_player) : player(_player)
 
 DeckGUI::~DeckGUI()
 {
-    cancelToken.store (false, std::memory_order_relaxed);
+    stopTimer();
 };
 
 void DeckGUI::paint (juce::Graphics& g)
@@ -66,13 +79,31 @@ void DeckGUI::paint (juce::Graphics& g)
 
 void DeckGUI::resized()
 {
-    const int rowH = getHeight()/5;
-    playButton.setBounds(0, 0,  getWidth()/2, rowH);
-    stopButton.setBounds(getWidth()/2, 0,  getWidth()/2, rowH);
-    volSlider.setBounds(0, rowH, getWidth(), rowH);
-    speedSlider.setBounds(0, rowH * 2, getWidth(), rowH);
-    posSlider.setBounds(0, rowH * 3, getWidth(), rowH);
-    loadButton.setBounds(0, rowH * 4,  getWidth(), rowH);
+    const double rowH = getHeight() / 20;
+    const double colW = getWidth() / 16;
+    playButton.setBounds(colW * 2, rowH,  colW * 5, rowH * 2);
+    stopButton.setBounds(colW * 9, rowH,  colW * 5, rowH * 2);
+    playSelectedButton.setBounds(colW * 2, rowH * 3, colW * 12, rowH * 2);
+
+    loadButton.setBounds(colW, rowH * 18,  colW * 7, rowH * 1.4);
+
+    muteButton.setBounds(colW, rowH * 6, colW * 4, rowH * 1.5);
+    skipButton.setBounds(colW * 11, rowH * 6, colW * 4, rowH * 1.5);
+
+    volSlider.setBounds(colW * 1, rowH * 14, colW * 4, rowH * 4);
+    volSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    volSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, colW * 4, rowH * 0.75);
+
+    speedSlider.setBounds(colW * 11, rowH * 14, colW * 4, rowH * 4);
+    speedSlider.setSliderStyle(juce::Slider::SliderStyle::Rotary);
+    speedSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, colW * 4, rowH * 0.75);
+
+    // Position Slider (More centered)
+    posSlider.setBounds(colW, rowH * 12, colW * 14, rowH);
+    posSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::NoTextBox, true, colW * 4, rowH * 0.75);
+
+    trackListComponent.setBounds(colW, rowH * 8, colW * 14, rowH * 3);
+    waveformDisplay.setBounds(colW, rowH * 10.5, colW * 14, rowH * 3);
 }
 
 void DeckGUI::buttonClicked(Button* button)
@@ -92,10 +123,41 @@ void DeckGUI::buttonClicked(Button* button)
         constexpr auto fileChooserFlags = FileBrowserComponent::canSelectFiles;
         fChooser.launchAsync(fileChooserFlags, [this] (const FileChooser &_chooser)
         {
-            player->loadURL(_chooser.getURLResult());
-            updateTrackPosition();
+            if (const File chosenFile = _chooser.getResult(); chosenFile.exists()){
+                player->loadURL(URL{_chooser.getResult()});
+                waveformDisplay.loadURL(URL{_chooser.getResult()});
+
+                // Update the Labels
+                trackListComponent.currentTrack = _chooser.getResult().getFileName();
+                trackListComponent.nextTrack = "No Track";
+                trackListComponent.previousTrack = "No Track";
+                trackListComponent.labelUpdate();
+
+                // Clean the playlist from the deck
+                trackListComponent.trackTitles.clear();
+                trackListComponent.trackPaths.clear();
+            }
+            // updateTrackPosition();
         });
         std::cout << "Load button was clicked!" << std::endl;
+    }
+    if (button == &playSelectedButton) {
+        if (playlist->selectedTrack != "Nothing Selected")
+        {
+            // Plays the selected track
+            player->loadURL(URL{ File{playlist->selectedTrackPath} });
+            waveformDisplay.loadURL(URL{File{playlist->selectedTrackPath} });
+
+            // Update the Labels
+            trackListComponent.currentTrack = playlist->selectedTrack;
+            trackListComponent.nextTrack = "No Track";
+            trackListComponent.previousTrack = "No Track";
+            trackListComponent.labelUpdate();
+
+            // Clean the playlist from the deck
+            trackListComponent.trackTitles.clear();
+            trackListComponent.trackPaths.clear();
+        }
     }
 }
 
@@ -134,5 +196,12 @@ void DeckGUI::filesDropped(const StringArray& files, int x, int y)
 void DeckGUI::updateTrackPosition()
 {
     posSlider.setValue(player->getPositionRelative());
+}
+
+void DeckGUI::timerCallback()
+{
+    //std::cout << "DeckGUI::timerCallback" << std::endl;
+    waveformDisplay.setPositionRelative(
+            player->getPositionRelative());
 }
 

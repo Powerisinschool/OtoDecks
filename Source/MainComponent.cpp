@@ -23,8 +23,11 @@ MainComponent::MainComponent()
     // juce_setAudioEngineInstance(this);
     // juce_setupRemoteCommandCenter();
 
-    addAndMakeVisible(deckGUI1);
-    addAndMakeVisible(deckGUI2);
+    addAndMakeVisible(deck1);
+    addAndMakeVisible(deck2);
+    addAndMakeVisible(playlistComponent);
+
+    formatManager.registerBasicFormats();
 }
 
 MainComponent::~MainComponent()
@@ -50,24 +53,6 @@ void MainComponent::getNextAudioBlock (const AudioSourceChannelInfo& bufferToFil
     mixerSource.getNextAudioBlock (bufferToFill);
 }
 
-// void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
-// {
-//     auto *leftChan = bufferToFill.buffer->getWritePointer(0,
-//                                                                 bufferToFill.startSample);
-//     auto *rightChan = bufferToFill.buffer->getWritePointer(0,
-//                                                                 bufferToFill.startSample);
-//     for (auto i = 0; i < bufferToFill.numSamples; ++i)
-//     {
-//         // const float sample = rand.nextFloat() * 0.04;
-//         // const double sample = fmod(phase, 0.2);
-//         const double sample = sin(phase) * 0.1;
-//         leftChan[i] = sample;
-//         rightChan[i] = sample;
-//
-//         phase += dphase;
-//     }
-//     // bufferToFill.clearActiveBufferRegion();
-// }
 
 void MainComponent::releaseResources()
 {
@@ -78,7 +63,6 @@ void MainComponent::releaseResources()
     player1.releaseResources();
     player2.releaseResources();
     mixerSource.releaseResources();
-    // cancelToken.store (false, std::memory_order_relaxed);
 }
 
 //==============================================================================
@@ -92,8 +76,9 @@ void MainComponent::paint (Graphics& g)
 
 void MainComponent::resized()
 {
-    deckGUI1.setBounds (getLocalBounds().withWidth(getWidth()/2));
-    deckGUI2.setBounds (getLocalBounds().withWidth(getWidth()/2).withX(getWidth()/2));
+    deck1.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*4/5));
+    deck2.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*4/5).withX(getWidth()/2));
+    playlistComponent.setBounds(getLocalBounds().withHeight(getHeight()/5).withY(getHeight()*4/5));
 }
 
 // void MainComponent::play()
