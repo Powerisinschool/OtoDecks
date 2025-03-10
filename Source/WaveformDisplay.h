@@ -9,26 +9,26 @@
 //==============================================================================
 /*
 */
-class WaveformDisplay    : public Component,
-                           public ChangeListener
+class WaveformDisplay    : public juce::Component,
+public juce::ChangeListener
 {
 public:
-    WaveformDisplay( AudioFormatManager & 	formatManagerToUse,
-                    AudioThumbnailCache & 	cacheToUse );
+    WaveformDisplay( juce::AudioFormatManager & 	formatManagerToUse,
+                    juce::AudioThumbnailCache & 	cacheToUse );
     ~WaveformDisplay();
 
-    void paint (Graphics&) override;
+    void paint (juce::Graphics&) override;
     void resized() override;
 
-    void changeListenerCallback (ChangeBroadcaster *source) override;
+    void changeListenerCallback (juce::ChangeBroadcaster *source) override;
 
-    void loadURL(const URL& audioURL);
+    void loadURL(const juce::URL& audioURL);
 
     /** set the relative position of the playhead*/
     void setPositionRelative(double pos);
 
 private:
-    AudioThumbnail audioThumb;
+    juce::AudioThumbnail audioThumb;
     bool fileLoaded;
     double position;
 

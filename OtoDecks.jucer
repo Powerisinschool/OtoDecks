@@ -4,10 +4,6 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="jscIou" name="OtoDecks">
     <GROUP id="{8BC182C9-7DEA-7FCB-096B-F231AB2232A2}" name="Source">
-      <FILE id="Bt5SQd" name="IntervalThread.cpp" compile="1" resource="0"
-            file="Source/IntervalThread.cpp"/>
-      <FILE id="uShlTx" name="IntervalThread.h" compile="0" resource="0"
-            file="Source/IntervalThread.h"/>
       <FILE id="efCl4R" name="PlaylistComponent.cpp" compile="1" resource="0"
             file="Source/PlaylistComponent.cpp"/>
       <FILE id="WSoRYW" name="PlaylistComponent.h" compile="0" resource="0"
@@ -27,6 +23,10 @@
             file="Source/TrackListComponent.h"/>
       <FILE id="WUUzq7" name="MacMediaControls.mm" compile="1" resource="0"
             file="Source/MacMediaControls.mm"/>
+      <FILE id="i4fQGH" name="WaveformDisplay.cpp" compile="1" resource="0"
+            file="Source/WaveformDisplay.cpp"/>
+      <FILE id="xgmLkt" name="WaveformDisplay.h" compile="0" resource="0"
+            file="Source/WaveformDisplay.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

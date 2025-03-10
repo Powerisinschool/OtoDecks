@@ -12,8 +12,6 @@
 
 #include <JuceHeader.h>
 
-#include "IntervalThread.h"
-
 using namespace juce;
 
 class DJAudioPlayer : public AudioSource {
@@ -43,7 +41,7 @@ public:
   double getPositionRelative() const;
   // Return the total length of the track
   double getTrackDuration() const;
-  // const char* getTrackTitle() const;
+   const char* getTrackTitle() const;
   const char *getActiveDeckName() const;
   const char *getFilePath() const;
 
@@ -52,22 +50,15 @@ public:
   void togglePlayPause();
 
   bool isPlaying() const;
-
   bool isTrackFinished() const;
 
 private:
+  std::string trackTitle{"audio track"};
   std::string deckName;
   AudioFormatManager& formatManager;
   std::unique_ptr<AudioFormatReaderSource> readerSource;
   AudioTransportSource transportSource;
   ResamplingAudioSource resampleSource{&transportSource, false, 2};
-
-  // std::atomic_bool cancelToken{false};
-  // IntervalThread macUpdateUIThread;
-
-  // std::string filePath;
-
-  // std::string trackTitle{"Loading..."};
 };
 
 extern "C"

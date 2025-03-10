@@ -52,10 +52,10 @@ void DJAudioPlayer::loadURL(const URL& audioURL)
   if (auto *reader = formatManager.createReaderFor(audioURL.createInputStream(options.withConnectionTimeoutMs(5000).withNumRedirectsToFollow(3))); reader != nullptr) // good file
   {
     // DBG ("Track Title: " << trackTitle);
-    // if (const String trackTitle = reader->metadataValues["Title"]; !trackTitle.isEmpty())
-    //   this->trackTitle = trackTitle.toUTF8();
-    // else
-    //   this->trackTitle = audioURL.getFileName().toUTF8();
+    if (const String trackTitle = reader->metadataValues["Title"]; !trackTitle.isEmpty())
+      this->trackTitle = trackTitle.toUTF8();
+    else
+      this->trackTitle = audioURL.getFileName().toUTF8();
     // loadTags(audioURL.getSubPath().toStdString().c_str());
 
     // load image data
@@ -64,37 +64,10 @@ void DJAudioPlayer::loadURL(const URL& audioURL)
     std::unique_ptr<AudioFormatReaderSource> newSource(new AudioFormatReaderSource(reader, true));
     transportSource.setSource(newSource.get(), 0, nullptr, reader->sampleRate);
     readerSource = std::move(newSource);
-    // juce_setAudioEngineInstance(this);
-    // juce_setupRemoteCommandCenter();
-    // juce_updateNowPlayingInfo();
+     juce_setAudioEngineInstance(this);
+     juce_setupRemoteCommandCenter();
+     juce_updateNowPlayingInfo();
   } else {
-    DBG("Audio URL: " << audioURL.toString(false));
-    if (! audioURL.isLocalFile())
-    {
-      DBG("Error: Not a local file");
-    }
-    else if (! audioURL.getLocalFile().existsAsFile())
-    {
-      DBG("Error: File does not exist");
-    }
-    else if (! audioURL.getLocalFile().hasReadAccess())
-    {
-      DBG("Error: No read access");
-    }
-
-    if (auto inputStream = audioURL.createInputStream(options); inputStream == nullptr)
-    {
-      DBG("Failed to create input stream!");
-    }
-    else
-    {
-      auto *_reader = formatManager.createReaderFor(std::move(inputStream));
-      if (_reader == nullptr)
-      {
-        DBG("Failed to create reader!");
-      }
-    }
-
     DBG("DJAudioPlayer::loadURL bad file");
   }
 }
@@ -118,7 +91,7 @@ void DJAudioPlayer::setSpeed(const double ratio)
 void DJAudioPlayer::setPosition(const double position)
 {
   transportSource.setPosition(position);
-  // juce_updateNowPlayingInfo();
+  juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::setPositionRelative(const double position)
@@ -164,12 +137,10 @@ double DJAudioPlayer::getTrackDuration() const
   return transportSource.getLengthInSeconds();
 }
 
-// const char* DJAudioPlayer::getTrackTitle() const
-// {
-//   // std::cout << "t: " << trackTitle << std::endl;
-//   // std::cout << "t: " << trackTitle.c_str() << std::endl;
-//   return trackTitle.c_str();
-// }
+ const char* DJAudioPlayer::getTrackTitle() const
+ {
+   return trackTitle.c_str();
+ }
 
 const char* DJAudioPlayer::getActiveDeckName() const
 {
@@ -190,15 +161,15 @@ void DJAudioPlayer::start()
 {
   if (!transportSource.isPlaying())
     transportSource.start();
-  // juce_setAudioEngineInstance(this);
-  // juce_updateNowPlayingInfo();
+  juce_setAudioEngineInstance(this);
+  juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::stop()
 {
   if (transportSource.isPlaying())
     transportSource.stop();
-  // juce_updateNowPlayingInfo();
+  juce_updateNowPlayingInfo();
 }
 
 void DJAudioPlayer::togglePlayPause()
@@ -207,7 +178,6 @@ void DJAudioPlayer::togglePlayPause()
     transportSource.stop();
   else
     transportSource.start();
-  // juce_updateNowPlayingInfo();
 }
 
 bool DJAudioPlayer::isPlaying() const

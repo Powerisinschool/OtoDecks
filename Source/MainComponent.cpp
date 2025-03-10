@@ -76,9 +76,9 @@ void MainComponent::paint (Graphics& g)
 
 void MainComponent::resized()
 {
-    deck1.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*4/5));
-    deck2.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*4/5).withX(getWidth()/2));
-    playlistComponent.setBounds(getLocalBounds().withHeight(getHeight()/5).withY(getHeight()*4/5));
+    deck1.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*3/5));
+    deck2.setBounds (getLocalBounds().withWidth(getWidth()/2).withHeight(getHeight()*3/5).withX(getWidth()/2));
+    playlistComponent.setBounds(getLocalBounds().withHeight(getHeight()*2/5).withY(getHeight()*3/5));
 }
 
 // void MainComponent::play()

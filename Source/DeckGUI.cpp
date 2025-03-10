@@ -50,6 +50,7 @@ DeckGUI::DeckGUI(DJAudioPlayer* _player,
     volSlider.addListener(this);
     speedSlider.addListener(this);
     posSlider.addListener(this);
+    startTimer(500);
 }
 
 DeckGUI::~DeckGUI()
@@ -141,23 +142,45 @@ void DeckGUI::buttonClicked(Button* button)
         });
         std::cout << "Load button was clicked!" << std::endl;
     }
-    if (button == &playSelectedButton) {
-        if (playlist->selectedTrack != "Nothing Selected")
+    if (button == &playSelectedButton)
+    {
+        // DBG("Here");
+        // if (auto path = playlist->getSelectedTrack(); path)
+        // {
+        //     // DBG("here 4");
+        // if (selectedTrack->second == nullptr)
+        // {
+        //     DBG("Invalid Track");
+        // }
+        // player->loadURL(*selectedTrack->second);
+        // waveformDisplay.loadURL(*selectedTrack->second);
+        //
+        // // Update the Labels
+        // trackListComponent.currentTrack = selectedTrack->first;
+        // trackListComponent.nextTrack = "No Track";
+        // trackListComponent.previousTrack = "No Track";
+        // trackListComponent.labelUpdate();
+        //
+        // // Clean the playlist from the deck
+        // trackListComponent.trackTitles.clear();
+        // trackListComponent.trackPaths.clear();
+        // }
+    }
+    if (button == &muteButton)
+    {
+        if (muteButton.getToggleState())
         {
-            // Plays the selected track
-            player->loadURL(URL{ File{playlist->selectedTrackPath} });
-            waveformDisplay.loadURL(URL{File{playlist->selectedTrackPath} });
-
-            // Update the Labels
-            trackListComponent.currentTrack = playlist->selectedTrack;
-            trackListComponent.nextTrack = "No Track";
-            trackListComponent.previousTrack = "No Track";
-            trackListComponent.labelUpdate();
-
-            // Clean the playlist from the deck
-            trackListComponent.trackTitles.clear();
-            trackListComponent.trackPaths.clear();
+            player->setGain(0);
         }
+        else
+        {
+            player->setGain(volSlider.getValue());
+        }
+    }
+    if (button == &skipButton)
+    {
+      player->skipTrackBySeconds(10);
+      DBG("Skip button was clicked!");
     }
 }
 

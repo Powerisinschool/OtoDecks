@@ -17,15 +17,16 @@ PlaylistComponent::PlaylistComponent()
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
     addAndMakeVisible(tableComponent);
+    addAndMakeVisible(addTrackBtn);
 
-    tableComponent.getHeader().addColumn("Track title", 1, 666);
-    tableComponent.getHeader().addColumn("", 2, 333);
+    tableComponent.getHeader().addColumn("Track title", 1, 800);
+    tableComponent.getHeader().addColumn("", 4, 200);
     tableComponent.setModel(this);
 
-    trackTitles.push_back("Track 1");
-    trackTitles.push_back("Track 2");
-    trackTitles.push_back("Track 3");
-    trackTitles.push_back("Track 4");
+    // tracks.emplace_back("Track 1", nullptr);
+    // tracks.emplace_back("Track 2", nullptr);
+    // tracks.emplace_back("Track 3", nullptr);
+    // tracks.emplace_back("Track 4", nullptr);
 }
 
 PlaylistComponent::~PlaylistComponent()
@@ -43,91 +44,109 @@ void PlaylistComponent::paint (juce::Graphics& g)
 
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
-    g.setColour (Colours::black);
-    Rectangle<float> prepareBorder(getWidth() * 0.295, getHeight() * 0.65, getWidth() * 0.41, getHeight() * 0.35);
-    g.fillRect(prepareBorder);
+    // g.setColour (juce::Colours::black);
+    // juce::Rectangle<float> prepareBorder(getWidth() * 0.295, getHeight() * 0.65, getWidth() * 0.41, getHeight() * 0.35);
+    // g.fillRect(prepareBorder);
 
-    g.setColour(Colours::darkslategrey);
-    Rectangle<float> prepareArea(getWidth() * 0.3, getHeight() * 0.68, getWidth() * 0.4, getHeight() * 0.31);
+    g.setColour(juce::Colours::darkslategrey);
+    juce::Rectangle<float> prepareArea(getWidth(), getHeight() * 0.75, getWidth(), getHeight() * 0.25);
     g.fillRect(prepareArea);
-
-    prepareLabel1.setColour(1, juce::Colours::white);
-    prepareLabel1.setFont(20.0f);
-    prepareLabel1.setText(selectedTrack, juce::dontSendNotification);
-    prepareLabel1.setJustificationType(juce::Justification::centred);
-    prepareLabel1.setBounds(getWidth() * 0.25, getHeight() * 0.80, getWidth() * 0.5, getHeight() * 0.1);
-
-    prepareLabel2.setColour(1, juce::Colours::white);
-    prepareLabel2.setFont(14.0f);
-    prepareLabel2.setText("PREPARED TRACK", juce::dontSendNotification);
-    prepareLabel2.setJustificationType(juce::Justification::centred);
-    prepareLabel2.setBounds(getWidth() * 0.3, getHeight() * 0.72, getWidth() * 0.4, getHeight() * 0.1);
-
-    // Add - Remove Track Buttons
-    addTrackButton.setBounds(getWidth() * 0.72, getHeight() * 0.68, getWidth() * 0.25, getHeight() * 0.1);
-    removeTrackButton.setBounds(getWidth() * 0.72, getHeight() * 0.80, getWidth() * 0.25, getHeight() * 0.1);
-
-    // SearchBox and Search Button
-    searchBox.setBounds(getWidth() * 0.02, getHeight() * 0.70, getWidth() * 0.25, getHeight() * 0.1);
-    searchButton.setBounds(getWidth() * 0.15, getHeight() * 0.82, getWidth() * 0.12, getHeight() * 0.1);
-
-    searchButton.addListener(this);
 }
 
 void PlaylistComponent::resized()
 {
     // This method is where you should set the bounds of any child
     // components that your component contains..
-    tableComponent.setBounds(getLocalBounds());
+    tableComponent.setBounds(getLocalBounds().withHeight(getHeight() * 0.75));
+    addTrackBtn.setBounds(getLocalBounds().withHeight(getHeight() * 0.25).withY(getHeight() * 0.75));
 }
 
 int PlaylistComponent::getNumRows() {
-    return trackTitles.size();
+    return tracks.size();
 }
 
-void PlaylistComponent::paintRowBackground(Graphics &g, int rowNumber, int width, int height, bool rowIsSelected) {
+void PlaylistComponent::paintRowBackground(juce::Graphics &g, int rowNumber, int width, int height, bool rowIsSelected) {
     // just highlight selected rows
     if (rowIsSelected)
     {
-        g.fillAll(Colours::orange);
+        g.fillAll(juce::Colours::orange);
     }
     else{
-        g.fillAll(Colours::darkgrey);
+        g.fillAll(juce::Colours::darkgrey);
     }
 }
 
 
-void PlaylistComponent::paintCell(Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
-    g.drawText (trackTitles[rowNumber], // get the current track title as a cell
-    2, 0,
-    width - 4, height,
-    Justification::centredLeft,
-    true);
+void PlaylistComponent::paintCell(juce::Graphics &g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) {
+    if (columnId == 1)
+    {
+        g.drawText (tracks[rowNumber].first, // get the current track title as a cell
+        2, 0,
+        width - 4, height,
+        juce::Justification::centredLeft,
+        true);
+    }
 }
 
-void PlaylistComponent::cellClicked(int rowNumber, int columnId, const MouseEvent &) {
-    DBG("A cell was clicked");
-    DBG(rowNumber);
-    DBG(columnId);
+void PlaylistComponent::cellClicked(int rowNumber, int columnId, const juce::MouseEvent &) {
+    selectedTrack = std::make_pair(tracks[rowNumber].first, tracks[rowNumber].second);
 }
 
-Component *PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component *existingComponentToUpdate) {
+juce::Component *PlaylistComponent::refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, juce::Component *existingComponentToUpdate) {
     if (columnId == 2)
     {
         if (existingComponentToUpdate == nullptr) {
-            const auto btn = new TextButton("play");
-            String id{std::to_string(rowNumber)};
-            btn->setComponentID(id);
-            btn->addListener(this);
-            existingComponentToUpdate = btn;
+            juce::String id{std::to_string(rowNumber)};
+            const auto loadDeck1Btn = new juce::TextButton("Load into Deck 1");
+            loadDeck1Btn->setComponentID(id);
+            loadDeck1Btn->addListener(this);
+            existingComponentToUpdate = loadDeck1Btn;
         }
+    }
+    if (columnId == 3)
+    {
+        juce::String id{std::to_string(rowNumber)};
+        const auto loadDeck2Btn = new juce::TextButton("Load into Deck 2");
+        loadDeck2Btn->setComponentID(id);
+        loadDeck2Btn->addListener(this);
+        existingComponentToUpdate = loadDeck2Btn;
+    }
+    if (columnId == 4)
+    {
+        juce::String id{std::to_string(rowNumber)};
+        const auto deleteBtn = new juce::TextButton("Delete");
+        deleteBtn->setComponentID(id);
+        deleteBtn->addListener(this);
+        existingComponentToUpdate = deleteBtn;
     }
     return existingComponentToUpdate;
 }
 
-void PlaylistComponent::buttonClicked(Button *button) {
+void PlaylistComponent::buttonClicked(juce::Button *button) {
     int id = std::stoi(button->getComponentID().toStdString());
-    DBG("PlaylistComponent::buttonClicked " << trackTitles[id]);
+    DBG("PlaylistComponent::buttonClicked " << tracks[id].first);
+    if (button == &addTrackBtn)
+    {
+        constexpr auto fileChooserFlags = FileBrowserComponent::canSelectFiles;
+        fChooser.launchAsync(fileChooserFlags, [this] (const FileChooser &_chooser)
+        {
+            if (const File chosenFile = _chooser.getResult(); chosenFile.exists()){
+                tracks.emplace_back(chosenFile.getFileName().toStdString(), URL{_chooser.getResult()});
+            }
+            // updateTrackPosition()
+        });
+    }
+    if (button->getButtonText().contains("Delete"))
+    {
+        tracks.erase(tracks.begin() + id);
+        tableComponent.updateContent();
+        tableComponent.repaint(getLocalBounds());
+        return;
+    }
+    selectedTrack = nullopt;
 }
 
-
+std::optional<std::pair<std::string, URL>> PlaylistComponent::getSelectedTrack() const
+{
+    return selectedTrack;
+}

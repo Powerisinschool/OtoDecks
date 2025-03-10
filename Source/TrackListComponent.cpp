@@ -3,7 +3,7 @@
 
     TrackListComponent.cpp
     Created: 10 Mar 2025 4:42:16am
-    Author:  sola
+    Author:  Tolulope Olagunju
 
   ==============================================================================
 */
@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 #include "TrackListComponent.h"
 
-#include <bits/random.h>
+#include <random>
 
 //==============================================================================
 TrackListComponent::TrackListComponent(DJAudioPlayer* _player, WaveformDisplay* _waveformDisplay)

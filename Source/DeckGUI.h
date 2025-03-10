@@ -12,7 +12,6 @@
 
 #include <JuceHeader.h>
 
-#include "IntervalThread.h"
 #include "DJAudioPlayer.h"
 #include "PlaylistComponent.h"
 #include "TrackListComponent.h"
@@ -46,6 +45,7 @@ public:
     void filesDropped(const StringArray& files, int x, int y) override;
 
     void updateTrackPosition();
+    void loadTrack();
     void timerCallback() override;
 
 private:
